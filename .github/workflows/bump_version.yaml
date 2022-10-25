@@ -1,5 +1,12 @@
 name: Bump version
 on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Version to bump (major, minor, patch)"
+        default: "patch"
+        required: true
+
   pull_request:
     branches: master
     types: [closed]
@@ -9,12 +16,16 @@ jobs:
     name: Get version bump
     runs-on: ubuntu-latest
     outputs:
-      bump: ${{ steps.get-version-bump.outputs.bump }}
+      bump: ${{ env.BUMP }}
     steps:
       - if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
         name: Get version bump
         id: get-version-bump
         uses: husarion-ci/action-get-version-bump@v0.3.0
+      - if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+        run: echo "BUMP=${{ steps.get-version-bump.outputs.bump }}" >> $GITHUB_ENV
+      - if: github.event_name == 'workflow_dispatch'
+        run: echo "BUMP=${{ github.event.inputs.name }}" >> $GITHUB_ENV
 
   catkin-release:
     name: Bump version
@@ -23,11 +34,9 @@ jobs:
     outputs:
       new_version: ${{ steps.catkin-release.outputs.new_version }}
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
-      -
-        name: Catkin release
+      - name: Catkin release
         id: catkin-release
         uses: husarion-ci/action-catkin-release@v0.1.4
         with:
@@ -35,7 +44,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           git_user: action-bot
           git_email: action-bot@action-bot.com
-  
+
   build-and-push-docker-image:
     name: Create new docker image
     runs-on: ubuntu-latest
