@@ -2,6 +2,9 @@
 Changelog for package rosbot_xl_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.0.3 (2023-03-22)
 ------------------
 
